@@ -10,12 +10,12 @@ import UIKit
 
 class DrawerController: UIViewController, RootViewControllerDelegate {
     var rootViewController: RootViewController
-    var menuController: MenuViewController
+    var menuController: UIViewController
 
     var isMenuExpanded: Bool = false
     let overlayView = UIView()
 
-    init(rootViewController: RootViewController, menuController: MenuViewController) {
+    init(rootViewController: RootViewController, menuController: UIViewController) {
         self.rootViewController = rootViewController
         self.menuController = menuController
         super.init(nibName: nil, bundle: nil)
@@ -29,18 +29,18 @@ class DrawerController: UIViewController, RootViewControllerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.addChildViewController(rootViewController)
+        self.addChild(rootViewController)
         self.view.addSubview(rootViewController.view)
-        rootViewController.didMove(toParentViewController: self)
+        rootViewController.didMove(toParent: self)
 
         overlayView.backgroundColor = .black
         overlayView.alpha = 0
         view.addSubview(overlayView)
 
         self.menuController.view.frame = CGRect(x: 0, y: 0, width: 0, height: self.view.bounds.height)
-        self.addChildViewController(menuController)
+        self.addChild(menuController)
         self.view.addSubview(menuController.view)
-        menuController.didMove(toParentViewController: self)
+        menuController.didMove(toParent: self)
 
         configureGestures()
     }
@@ -48,22 +48,24 @@ class DrawerController: UIViewController, RootViewControllerDelegate {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         overlayView.frame = view.bounds
-        let width: CGFloat = (isMenuExpanded) ? view.bounds.width * 2 / 3 : 0.0
-        self.menuController.view.frame = CGRect(x: 0, y: 0, width: width , height: self.view.bounds.height)
+        let width = view.bounds.width * 2.0 / 3.0
+        let x: CGFloat = (isMenuExpanded) ? 0 : -width
+        self.menuController.view.frame = CGRect(x: x, y: 0, width: width , height: self.view.bounds.height)
     }
 
     func toggleMenu() {
         isMenuExpanded = !isMenuExpanded
         let bounds = self.view.bounds
-        let width: CGFloat = (isMenuExpanded) ? bounds.width * 2 / 3 : 0.0
-
+        let width = view.bounds.width * 2.0 / 3.0
+        let height = bounds.height
+        let x: CGFloat = (isMenuExpanded) ? 0.0 : -width
         UIView.animate(withDuration: 0.3, animations: {
-            self.menuController.view.frame = CGRect(x: 0, y: 0, width: width, height: bounds.height)
+            self.menuController.view.frame = CGRect(x: x, y: 0, width: bounds.width, height: height)
             self.overlayView.alpha = (self.isMenuExpanded) ? 0.5 : 0.0
         }) { (success) in
         }
     }
-    
+
     func navigateTo(viewController: UIViewController) {
         rootViewController.setViewControllers([viewController], animated: true)
         self.toggleMenu()
